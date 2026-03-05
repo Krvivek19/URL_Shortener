@@ -1,0 +1,57 @@
+# ── Docker Compose ──
+# Runs 3 services: API, PostgreSQL, Redis
+# Usage: docker-compose up --build
+
+version: "3.9"
+
+services:
+
+  # ── 1. URL Shortener API ────────────────────────────
+  api:
+    build: .
+    container_name: url-shortener-api
+    ports:
+      - "8000:8000"                  # Access at http://localhost:8000
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/urlshortener
+      - REDIS_URL=redis://redis:6379/0
+      - BASE_URL=http://localhost:8000
+    depends_on:
+      db:
+        condition: service_healthy   # Wait for DB to be ready
+      redis:
+        condition: service_started
+    volumes:
+      - .:/app                       # Hot reload: code changes reflect instantly
+    restart: unless-stopped
+
+  # ── 2. PostgreSQL Database ──────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: url-shortener-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: urlshortener
+    ports:
+      - "5432:5432"                  # Access DB from host for debugging
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist data across restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── 3. Redis Cache ─────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: url-shortener-redis
+    ports:
+      - "6379:6379"                  # Access Redis from host for debugging
+    restart: unless-stopped
+
+# ── Persistent Volumes ───────────────────────────────
+volumes:
+  postgres_data:

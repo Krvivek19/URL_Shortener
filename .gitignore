@@ -1,0 +1,14 @@
+# ── .gitignore ──
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+*.db
+*.sqlite3
+.idea/
+.vscode/
