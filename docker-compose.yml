@@ -2,8 +2,6 @@
 # Runs 3 services: API, PostgreSQL, Redis
 # Usage: docker-compose up --build
 
-version: "3.9"
-
 services:
 
   # ── 1. URL Shortener API ────────────────────────────

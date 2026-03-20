@@ -72,9 +72,10 @@ def create_short_url(request: URLCreateRequest, db: Session) -> URL:
     try:
         db.commit()
         db.refresh(url_record)
-    except IntegrityError:
+    except IntegrityError as e:
         # short_code collision (very rare with random codes)
         db.rollback()
+        logger.error(f"IntegrityError details: {str(e)}")
         logger.warning(f"Collision on short_code '{short_code}', retrying...")
         return _retry_create(request, db)
 
